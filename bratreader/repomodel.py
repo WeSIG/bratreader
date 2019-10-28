@@ -1,4 +1,3 @@
-import sys
 from bratreader.annotateddocument import AnnotatedDocument
 from bratreader.annotationimporter import importann
 from glob import iglob
@@ -34,18 +33,14 @@ class RepoModel(object):
 
         if os.path.isdir(pathtorepo):
             for path in iglob("{0}/*.ann".format(pathtorepo)):
-                try:
-                    # The key of each document is the document name without
-                    # the suffix (i.e. "001.ann" becomes "001")
-                    key = os.path.splitext(path)[0]
-                    key = os.path.split(key)[-1]
-                    context = importann(path)
-                    self.documents[key] = AnnotatedDocument(key, context)
-                except KeyError as e:
-                    print("Parse error for document {}: {}, {} \n".format(str(path),
-                                                            str(e),
-                                                            sys.exc_info()[0])
-                                                            )
+
+                # The key of each document is the document name without
+                # the suffix (i.e. "001.ann" becomes "001")
+                key = os.path.splitext(path)[0]
+                key = os.path.split(key)[-1]
+                #print(path)
+                context, text = importann(path)
+                self.documents[key] = AnnotatedDocument(key, context, text)
 
         else:
             raise IOError(u"{0} is not a valid directory".format(pathtorepo))

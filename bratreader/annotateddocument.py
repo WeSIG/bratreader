@@ -1,11 +1,12 @@
 from itertools import chain
 from lxml import etree
+from bratreader.event import Event
 
 
 class AnnotatedDocument(object):
     """Represent a document in a Brat Corpus."""
 
-    def __init__(self, key, sentences):
+    def __init__(self, key, sentences, text):
         """
         Create a brat document.
 
@@ -16,15 +17,90 @@ class AnnotatedDocument(object):
         Represents the text of the review on a word-by-word basis.
         :return: None
         """
+        self.key = key
+
         self.sentences = sentences
         annotations = [chain.from_iterable([w.annotations for w in x.words])
                        for x in sentences]
+        
+        
+        #kzg modify
+#       self.annotations = list(chain.from_iterable(annotations))
         self.annotations = list(chain.from_iterable(annotations))
+        annotations_tmp = []
+        for ann_i in range(len(self.annotations)):
+            if self.annotations[ann_i] not in annotations_tmp:
+                annotations_tmp.append(self.annotations[ann_i])
+        self.annotations = annotations_tmp
+        #kzg modify
 
-        self.key = key
+        events = []
+        eID = 0
+        for idx in range(len(self.annotations)):
+            annT = self.annotations[idx]
+            sent = self.sentences[annT.words[0].sentkey]
+            line = sent.line
+            b, e = annT.spans[0]
+            b, e = b-sent.start, e-sent.start
+            if (annT.type == 'E'):
+                #print('\neT: \t' + annT.label +'\t'+ annT.repr +'\t'+ line[b:e] +'\t', [b, e])
+                args = list()
+                args_spans = list()
+                args_labels = list()
+                for idx_arg in range(len(annT.args)):
+                    arg = annT.args[idx_arg]
+                    #print(int(arg), len(self.annotations))
+                    annArg = self.annotations[int(arg)-1]
+                    ba, ea = annArg.realspan
+                    ba, ea = ba-sent.start, ea-sent.start# the args are in the same line with trigger!!
+                    args.append(annArg.repr)
+                    args_spans.append([ba,ea])
+                    args_labels.append(annArg.label)
+                    #print('eA' + str(idx_arg)+ ':\t'+ annArg.label +'\t'+ annArg.repr +'\t'+ line[ba:ea] +'\t', (ba, ea))
+                events.append(Event(eID, line, annT.repr, [b, e], annT.label, args, args_spans, args_labels))
+                eID = eID + 1
+        self.events = events
 
-        self.text = u"\n".join([u" ".join([x.form for x in s.words])
-                               for s in sentences])
+        self.text = text
+
+    def __repr__(self):
+        """Representation of the AnnotatedDocument."""
+        temp_ann = 'AnnotatedDocument:'
+        # elements in sentences
+        temp_ann = temp_ann + '\n\nkey:\n' + str(self.key)
+        temp_ann = temp_ann + '\n\ntext:\n' + self.text
+        temp_ann = temp_ann + '\n\nAnnotations:'
+        ind = 0
+        for ann in self.annotations:
+            temp_ann = temp_ann + '\nann[' + str(ind) + ']:' + str(ann)
+            ind = ind + 1
+        temp_ann = temp_ann + '\n\nEvents:'
+        ind = 0
+        for event in self.events:
+            temp_ann = temp_ann + '\nevent[' + str(ind) + ']:' + str(event)
+            ind = ind + 1
+        temp_ann = temp_ann + '\n\nSentences:'
+        ind = 0
+        for sent in self.sentences:
+            temp_ann = temp_ann + '\nsent[' + str(ind) + ']:' + str(sent)
+            ind = ind + 1
+        return "{0}\n".format(temp_ann)
+
+
+    def getlabelinspan(self, start, end):
+        """
+        Retrieve all labels in the specified character span.
+
+        :param start: The start index in characters.
+        :param end: The end index in characters.
+        :return a list of labels that fall inside the span.
+        """
+        return [list(ann.labels.keys())[0] for ann in self.annotations if
+                (ann.spans[0][0] <= start < ann.spans[-1][1])
+                or (ann.spans[0][0] < end <= ann.spans[-1][1])
+                or (start < ann.spans[0][0] < end and start < ann.spans[-1][1] < end)]
+
+
 
     def export_xml(self, pathtofile):
         """
@@ -80,4 +156,4 @@ class AnnotatedDocument(object):
         document.append(annotations)
 
         with open(pathtofile, 'wb') as f:
-            etree.ElementTree(document).write(f, pretty_print=True)
+            etree.ElementTree(document).write(f, encoding="utf-8", xml_declaration=True, pretty_print=True)
