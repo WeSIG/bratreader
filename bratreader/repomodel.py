@@ -33,7 +33,8 @@ class RepoModel(object):
 
         if os.path.isdir(pathtorepo):
             for path in iglob("{0}/*.ann".format(pathtorepo)):
-
+#                 if path[-6:-4] != '17':
+#                     continue
                 # The key of each document is the document name without
                 # the suffix (i.e. "001.ann" becomes "001")
                 key = os.path.splitext(path)[0]

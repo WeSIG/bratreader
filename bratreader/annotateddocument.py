@@ -24,20 +24,23 @@ class AnnotatedDocument(object):
                        for x in sentences]
         
         
-        #kzg modify
+        #kzg & linbo modify
 #       self.annotations = list(chain.from_iterable(annotations))
         self.annotations = list(chain.from_iterable(annotations))
+        print(self.annotations)
         annotations_tmp = []
+        dict_ann = {}
         for ann_i in range(len(self.annotations)):
             if self.annotations[ann_i] not in annotations_tmp:
                 annotations_tmp.append(self.annotations[ann_i])
-        self.annotations = annotations_tmp
+                dict_ann[int(self.annotations[ann_i].id)] = self.annotations[ann_i]
         #kzg modify
+        
 
         events = []
         eID = 0
-        for idx in range(len(self.annotations)):
-            annT = self.annotations[idx]
+        for idx in range(len(dict_ann)):
+            annT = dict_ann[idx+1]
             sent = self.sentences[annT.words[0].sentkey]
             line = sent.line
             b, e = annT.spans[0]
@@ -49,8 +52,7 @@ class AnnotatedDocument(object):
                 args_labels = list()
                 for idx_arg in range(len(annT.args)):
                     arg = annT.args[idx_arg]
-                    #print(int(arg), len(self.annotations))
-                    annArg = self.annotations[int(arg)-1]
+                    annArg = dict_ann[int(arg)]
                     ba, ea = annArg.realspan
                     ba, ea = ba-sent.start, ea-sent.start# the args are in the same line with trigger!!
                     args.append(annArg.repr)

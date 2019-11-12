@@ -26,7 +26,7 @@ class Word(object):
         temp_ann = temp_ann + '\tstart:' + str(self.start)
         temp_ann = temp_ann + '\tend:' + str(self.end)
         temp_ann = temp_ann + '\tform:' + str(self.form.strip())
-        temp_ann = temp_ann + '\nannotations:'
+        temp_ann = temp_ann + '\tannotations:'
         ind = 0
         for ann in self.annotations:
             temp_ann = temp_ann + '\t' + ann.repr + ',labels:' + str(list(ann.labels.keys()))
