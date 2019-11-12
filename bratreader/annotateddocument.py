@@ -27,7 +27,7 @@ class AnnotatedDocument(object):
         #kzg & linbo modify
 #       self.annotations = list(chain.from_iterable(annotations))
         self.annotations = list(chain.from_iterable(annotations))
-        print(self.annotations)
+        #print(self.annotations)
         annotations_tmp = []
         dict_ann = {}
         for ann_i in range(len(self.annotations)):
