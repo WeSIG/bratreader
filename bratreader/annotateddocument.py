@@ -1,6 +1,7 @@
 from itertools import chain
 from lxml import etree
 from bratreader.event import Event
+import json
 
 
 class AnnotatedDocument(object):
@@ -116,9 +117,10 @@ class AnnotatedDocument(object):
         sentences = etree.Element("sentences")
         for s in self.sentences:
 
-            sentence = etree.Element("sentence", id="s.{0}".format(s.key),
+            sentence = etree.Element("sentence",
                                      start=str(s.start),
-                                     end=str(s.end))
+                                     end=str(s.end), 
+                                     id="s.{0}".format(s.key))
 
             for w in s.words:
 
@@ -159,3 +161,32 @@ class AnnotatedDocument(object):
 
         with open(pathtofile, 'wb') as f:
             etree.ElementTree(document).write(f, encoding="utf-8", xml_declaration=True, pretty_print=True)
+            
+            
+            
+            
+            
+
+    def doc2dict(self):
+        """
+        Export the current document to an JSON string
+        :return: json string
+        """
+        data = {}
+        data['text'] = self.text
+        data['id'] = self.key
+        data['event_list'] = []
+        for event in self.events:
+            data['event_list'].append(event.event2dict())
+        return data
+
+    def export_json(self):
+        """
+        Export the current document to an JSON string
+        :return: json string
+        """
+        return json.dumps(self.doc2dict(),encoding="utf-8")
+
+
+        
+        

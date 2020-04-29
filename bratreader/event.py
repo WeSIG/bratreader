@@ -43,3 +43,39 @@ class Event(object):
         temp_ann = temp_ann + '\nmention:' + str(self.mention.strip())
         return "{0}".format(temp_ann)
     
+
+    def event2dict(self):        
+#         {"arguments": [
+#             {"argument_start_index": 2, 
+#              "role": "时间", 
+#              "argument": "今早", 
+#              "alias": []
+#              }, 
+#             {"argument_start_index": 6, 
+#              "role": "震级", 
+#              "argument": "2.9级", 
+#              "alias": []
+#              }
+#             ], 
+#         "trigger": "地震", 
+#         "trigger_start_index": 10, 
+#         "class": "灾害/意外", 
+#         "event_type": "灾害/意外-地震"
+#         }
+        
+        """Representation of the Annotation."""
+        event_dict = {}
+        event_dict['trigger'] = self.trigger
+        event_dict['trigger_start_index'] = self.trigger_spans[0]
+        event_dict['class'] = self.trigger_label
+        event_dict['event_type'] = self.trigger_label
+        event_dict['arguments'] = []
+        for idx_arg in range(len(self.args)):
+            arg = {}
+            arg['argument'] = self.args[idx_arg]
+            arg['argument_start_index'] = self.args_spans[idx_arg][0]
+            arg['role'] = self.args_labels[idx_arg]
+            arg['alias'] = []
+            event_dict['arguments'].append(arg)
+        return event_dict
+    

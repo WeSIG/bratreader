@@ -3,6 +3,7 @@ from bratreader.annotationimporter import importann
 from glob import iglob
 
 import os
+import json
 
 
 class RepoModel(object):
@@ -61,3 +62,19 @@ class RepoModel(object):
             path = os.path.join(pathtofolder,
                                 "{0}.xml".format(str(document.key)))
             document.export_xml(path)
+
+
+    def save_json(self, filename):
+        """
+        Export a RepoModel as a JSON to the specified folder. For sentence-level event extraction.
+
+        If the folder doesn't exist, it is created.
+        :param pathtofolder: (string) the path to the folder where the XML
+        should be exported.
+        """
+        with open(filename, 'w') as f:
+            for document in self.documents.values():
+                f.write("{}\n".format(json.dumps(document.doc2dict())))
+        
+        
+        
